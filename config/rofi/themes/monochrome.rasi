@@ -1,0 +1,102 @@
+/* Rofi 黑白简约主题 - 搭配 Hyprland 黑色边框风格 */
+
+* {
+    bg:          rgba(13, 13, 13, 0.82);
+    bg-alt:      rgba(30, 30, 30, 0.90);
+    fg:          #e8e8e8;
+    fg-dim:      #666666;
+    accent:      #ffffff;
+    border-col:  rgba(255, 255, 255, 0.70);
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    background-color: @bg;
+    border:           1px solid;
+    border-color:     @border-col;
+    border-radius:    10px;
+    width:            40%;
+    padding:          12px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing:          8px;
+    padding:          8px;
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border:           1px solid;
+    border-color:     #333333;
+    border-radius:    6px;
+    padding:          8px 12px;
+    spacing:          6px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color: @fg-dim;
+    background-color: transparent;
+}
+
+entry {
+    text-color:       @fg;
+    background-color: transparent;
+    placeholder:      "搜索...";
+    placeholder-color: @fg-dim;
+}
+
+listview {
+    background-color: transparent;
+    padding:          4px 0;
+    spacing:          2px;
+    lines:            8;
+    columns:          1;
+    scrollbar:        false;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    6px;
+    padding:          8px 12px;
+    spacing:          8px;
+    orientation:      horizontal;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element selected.normal {
+    background-color: @bg-alt;
+    text-color:       @accent;
+    border:           1px solid;
+    border-color:     #333333;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+    horizontal-align: 0;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             20px;
+}
+
+message {
+    background-color: @bg-alt;
+    border-radius:    6px;
+    padding:          6px 12px;
+}
+
+textbox {
+    text-color: @fg-dim;
+    background-color: transparent;
+}

@@ -1,0 +1,48 @@
+[general]
+import = ["~/.config/alacritty/themes/current-theme.toml"]
+live_config_reload = true
+
+[window]
+decorations = "full"
+opacity = 0.88
+blur = true
+startup_mode = "Windowed"
+dynamic_title = true
+decorations_theme_variant = "Dark"
+
+[scrolling]
+history = 100000
+multiplier = 5
+
+[font]
+normal = { family = "FiraCode Nerd Font Mono", style = "Medium,Regular" }
+bold = { family = "FiraCode Nerd Font Mono", style = "Bold" }
+italic = { family = "FiraCode Nerd Font Mono", style = "Light,Regular" }
+bold_italic = { family = "FiraCode Nerd Font Mono", style = "SemiBold,Regular" }
+size = 14
+offset = { x = 0, y = 1 }
+builtin_box_drawing = true
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{<>\t"
+save_to_clipboard = true
+
+[cursor]
+style = { shape = "Block", blinking = "Always" }
+vi_mode_style = { shape = "Block", blinking = "Off" }
+blink_interval = 500
+blink_timeout = 5
+unfocused_hollow = true
+thickness = 0.1
+
+[terminal]
+osc52 = "CopyPaste"
+
+[mouse]
+hide_when_typing = true
+# bindings = []
+
+[keyboard]
+
+[debug]
+render_timer = false

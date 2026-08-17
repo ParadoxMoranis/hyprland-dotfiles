@@ -1,0 +1,11 @@
+/* Rofi 主配置 */
+configuration {
+    modi:            "drun,run";
+    show-icons:      true;
+    display-drun:    "";
+    display-run:     "";
+    drun-display-format: "{name}";
+    font:            "Noto Sans CJK SC 11";
+}
+
+@theme "~/.config/rofi/themes/current-theme.rasi"

@@ -1,0 +1,102 @@
+* {
+    bg:                rgba(247, 247, 247, 0.94);
+    bg-alt:            rgba(231, 231, 231, 0.98);
+    fg:                #101010;
+    fg-dim:            #666666;
+    accent:            #111111;
+    accent-contrast:   #f8f8f8;
+    border-col:        rgba(17, 17, 17, 0.78);
+    selected-bg:       rgba(17, 17, 17, 0.94);
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    background-color: @bg;
+    border:           1px solid;
+    border-color:     @border-col;
+    border-radius:    12px;
+    width:            40%;
+    padding:          14px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing:          8px;
+    padding:          8px;
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border:           1px solid;
+    border-color:     @border-col;
+    border-radius:    8px;
+    padding:          8px 12px;
+    spacing:          6px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color: @fg-dim;
+    background-color: transparent;
+}
+
+entry {
+    text-color:        @fg;
+    background-color:  transparent;
+    placeholder:       "搜索...";
+    placeholder-color: @fg-dim;
+}
+
+listview {
+    background-color: transparent;
+    padding:          4px 0;
+    spacing:          2px;
+    lines:            8;
+    columns:          1;
+    scrollbar:        false;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    8px;
+    padding:          8px 12px;
+    spacing:          8px;
+    orientation:      horizontal;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element selected.normal {
+    background-color: @selected-bg;
+    text-color:       @accent-contrast;
+    border:           1px solid;
+    border-color:     @accent;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+    horizontal-align: 0;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             20px;
+}
+
+message {
+    background-color: @bg-alt;
+    border-radius:    8px;
+    padding:          6px 12px;
+}
+
+textbox {
+    text-color: @fg-dim;
+    background-color: transparent;
+}

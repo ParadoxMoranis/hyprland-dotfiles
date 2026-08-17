@@ -1,0 +1,154 @@
+{
+   "layer": "top",
+   "position": "top",
+   "height": 38,
+   "margin-top": 3,
+   "margin-left": 3,
+   "margin-right": 3,
+   "modules-left": ["custom/launcher", "hyprland/workspaces", "clock", "disk", "memory", "cpu", "temperature"],
+   "modules-center": [],
+   "modules-right": [ "tray", "backlight", "pulseaudio", "bluetooth", "network", "battery"],
+   "disk": {
+       "format": "󰋊 {percentage_used}%",
+       "path": "/home"
+   },
+   "temperature": {
+        "format": "󰔏 {temperatureC}°C",
+        "format-critical": "󰸁 {temperatureC}°C",
+        "interval": 1,
+        "critical-threshold": 80
+    },
+   "hyprland/workspaces": {
+   },
+   "pulseaudio": {
+        "tooltip": true,
+        "scroll-step": 5,
+        "format": "{icon} {volume}%",
+        "format-muted": "󰝟 ",
+        "format-icons": {
+            "default": ["󰕿", "󰖀", "󰕾"]
+        }
+   },
+
+   "river/tags": {
+        "num-tags": 6
+   },
+   "network": {
+       "interval": 1,
+       "tooltip": true,
+       "format": "󰛳",
+       "format-wifi": "󰖩",
+       "format-ethernet": "󰈀",
+       "format-linked": "󰈀 ",
+       "format-disconnected": "󰖪 "
+   },
+   "tray":{
+       "icon-size":14,
+       "spacing": 10
+   },
+   "memory": {
+       "interval": 1,
+       "format": "󰍛 {percentage}%",
+       "max-length": 10
+   },
+   "custom/media": {
+       "interval": 30,
+       "format": "{icon} {}",
+       "return-type": "json",
+       "max-length": 20,
+       "format-icons": {
+           "spotify": " ",
+           "default": " "
+       },
+       "escape": true,
+       "exec": "$HOME/.config/system_scripts/mediaplayer.py 2> /dev/null",
+       "on-click": "playerctl play-pause"
+   },
+   "custom/netease_music": {
+       "exec": "$HOME/.config/waybar/scripts/netease-nowplaying.sh",
+       "format": "{}",
+       "escape": true,
+       "tooltip": false,
+       "max-length": 50,
+       "interval": 1,
+       "on-click": "playerctl -p plasma-browser-integration play-pause",
+       "on-click-right": "playerctl -p plasma-browser-integration next"
+   },
+   "custom/launcher":{
+       "format": "󰣇 ",
+       "on-click": "rofi -show drun",
+       "on-click-right": "killall rofi"
+   },
+   "custom/power":{
+       "format": " ",
+       "on-click": "bash ~/.config/rofi/leave/leave.sh"
+   },
+   "custom/updates":{
+       "format": "{} Update(s)",
+       "exec": "checkupdates | wc -l",
+       "exec-if": "[[ $(checkupdates | wc -l) != 0 ]]",
+       "interval": 15,
+       "on-click": "kitty --hold sh -c paru -Syyu --noconfirm && hyprctl notify 1 5000 b8bb26 'yay -Syyu done' "
+   },
+   "custom/wallpaper":{
+       "format":" ",
+       "on-click": "bash ~/.config/system_scripts/pkill_bc"
+   },
+   "battery": {
+       "states": {
+           "good": 95,
+           "warning": 30,
+           "critical": 20
+       },
+       "format": "{icon} {capacity}%",
+       "format-charging": "󰂄 {capacity}%",
+       "format-plugged": "󰚥 {capacity}%",
+       "format-alt": "{time} {icon}",
+       "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+       "tooltip-format": "{timeTo}\n{power}W\n{cycles}\n{health}%"
+   },
+   "bluetooth": {
+       "format": "󰂯",
+       "format-disabled": "󰂲",
+       "format-off": "󰂲",
+       "format-on": "󰂯",
+       "format-connected": "󰂱",
+       "tooltip-format": "{status}\n{num_connections}\n{controller_address}\n{controller_address_type}\n{controller_alias}\n{device_address_type}\n{device_alias}\n{device_enumerate}"
+   },
+   "cpu": {
+       "interval": 1,
+       "format": "󰻠 {usage}%",
+       "max-length": 10
+   },
+   "clock": {
+       "format": "󰥔 {:%H:%M %p  %Y-%m-%d}",
+       "tooltip-format": "<tt><small>{calendar}</small></tt>",
+       "calendar": {
+           "mode"          : "year",
+           "mode-mon-col"  : 3,
+           "weeks-pos"     : "right",
+           "on-scroll"     : 1,
+           "format": {
+               "months":     "<b>{}</b>",
+               "days":       "<b>{}</b>",
+               "weeks":      "<b>W{}</b>",
+               "weekdays":   "<b>{}</b>",
+               "today":      "<b><u>{}</u></b>"
+               }
+           },
+       "actions":  {
+           "on-click-right": "mode",
+           "on-scroll-up": "tz_up",
+           "on-scroll-down": "tz_down",
+           "on-scroll-up": "shift_up",
+           "on-scroll-down": "shift_down"
+       }
+   },
+   "backlight": {
+       "tooltip": false,
+       "format": "󰃞 {percent}%",
+       "interval":1,
+       "on-scroll-up": "brightnessctl s 1%-",
+       "on-scroll-down": "brightnessctl s 1%+"
+   }
+}
