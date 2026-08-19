@@ -4,6 +4,8 @@ set -euo pipefail
 
 ROFI_THEME="$HOME/.config/rofi/themes/monochrome.rasi"
 LOG_FILE="${XDG_RUNTIME_DIR:-/tmp}/monitor-menu.log"
+SWITCH_SCRIPT="$HOME/.config/hypr/scripts/monitor-switch.sh"
+STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/hypr-external-monitor-only"
 
 log() {
     printf '[%s] %s\n' "$(date '+%F %T')" "$*" >> "$LOG_FILE"
@@ -11,6 +13,42 @@ log() {
 
 notify() {
     notify-send "显示器设置" "$1" >/dev/null 2>&1 || true
+}
+
+external_only_enabled() {
+    [[ -s "$STATE_FILE" ]]
+}
+
+show_mode_menu() {
+    local mode_pick mode_entries
+
+    if external_only_enabled; then
+        mode_entries=$'调整显示器\n恢复内置显示器'
+    else
+        mode_entries=$'调整显示器\n仅启用外接显示器'
+    fi
+
+    mode_pick="$(rofi_pick "显示器设置" '选择显示器操作' "$mode_entries")" || return 1
+    case "$mode_pick" in
+        '调整显示器') return 0 ;;
+        '仅启用外接显示器')
+            if "$SWITCH_SCRIPT" --external-only; then
+                notify "已仅启用外接显示器；合盖后将休眠。"
+            else
+                notify "未检测到外接显示器，未关闭内置显示器。"
+            fi
+            return 1
+            ;;
+        '恢复内置显示器')
+            if "$SWITCH_SCRIPT" --normal; then
+                notify "已恢复内置显示器和自动布局。"
+            else
+                notify "恢复显示器布局失败。"
+            fi
+            return 1
+            ;;
+    esac
+    return 1
 }
 
 rofi_pick() {
@@ -400,6 +438,10 @@ main() {
     local backend
     backend="$(detect_backend "$forced_backend")"
     log "backend=$backend"
+
+    if [[ "$backend" == "hypr" && "$list_only" != "true" ]]; then
+        show_mode_menu || return 0
+    fi
 
     local raw_json parsed_json
     raw_json="$(list_outputs_json "$backend")"

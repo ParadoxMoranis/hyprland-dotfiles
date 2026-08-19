@@ -8,12 +8,9 @@ STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP_DIR="$STATE_HOME/desktop-dotfiles/backups/$TIMESTAMP"
 
-ASSUME_DEFAULTS=0
 SKIP_PACKAGES=0
 DRY_RUN=0
-FORCE_CUSTOMIZE_KEYS=0
 
-declare -A KEY_OVERRIDES=()
 declare -A PACKAGE_SEEN=()
 declare -a OFFICIAL_PACKAGES=()
 declare -a AUR_PACKAGES=()
@@ -22,20 +19,17 @@ usage() {
     cat <<'EOF'
 用法: ./install.sh [选项]
 
-  --defaults              使用仓库默认值，不进入交互配置
-  --customize-keybinds    逐项询问所有已启用的 Hyprland 快捷键
   --skip-packages         不安装软件，只部署配置
   --dry-run               显示将执行的操作，不修改系统
   -h, --help              显示帮助
 
-交互配置快捷键时，直接回车保留默认值，输入 off 禁用该快捷键。
+安装过程没有交互选项，始终部署仓库中的全部桌面配置。
 EOF
 }
 
 while (($#)); do
     case "$1" in
-        --defaults) ASSUME_DEFAULTS=1 ;;
-        --customize-keybinds) FORCE_CUSTOMIZE_KEYS=1 ;;
+        --defaults) ;;
         --skip-packages) SKIP_PACKAGES=1 ;;
         --dry-run) DRY_RUN=1 ;;
         -h|--help) usage; exit 0 ;;
@@ -44,49 +38,11 @@ while (($#)); do
     shift
 done
 
-if ((ASSUME_DEFAULTS && FORCE_CUSTOMIZE_KEYS)); then
-    printf '%s\n' '--defaults 与 --customize-keybinds 不能同时使用。' >&2
-    exit 2
-fi
-
 trim() {
     local value="$1"
     value="${value#"${value%%[![:space:]]*}"}"
     value="${value%"${value##*[![:space:]]}"}"
     printf '%s' "$value"
-}
-
-prompt_bool() {
-    local variable="$1" label="$2" default="$3" answer suffix
-
-    if ((ASSUME_DEFAULTS)); then
-        printf -v "$variable" '%s' "$default"
-        return
-    fi
-
-    if [[ "$default" == 1 ]]; then suffix='Y/n'; else suffix='y/N'; fi
-    while true; do
-        read -r -p "$label [$suffix] " answer
-        answer="${answer,,}"
-        case "$answer" in
-            '') printf -v "$variable" '%s' "$default"; return ;;
-            y|yes|1|true|是) printf -v "$variable" '1'; return ;;
-            n|no|0|false|否) printf -v "$variable" '0'; return ;;
-            *) printf '请输入 y 或 n。\n' ;;
-        esac
-    done
-}
-
-prompt_text() {
-    local variable="$1" label="$2" default="$3" response
-
-    if ((ASSUME_DEFAULTS)); then
-        printf -v "$variable" '%s' "$default"
-        return
-    fi
-
-    read -r -p "$label [$default] " response
-    printf -v "$variable" '%s' "${response:-$default}"
 }
 
 run() {
@@ -129,6 +85,7 @@ set_defaults() {
     FEATURE_WALLPAPER=1
     FEATURE_MONITOR_AUTO=1
     FEATURE_MONITOR_MENU=1
+    FEATURE_AUDIO_DEVICE_MENU=1
     FEATURE_INPUT_METHOD=1
     FEATURE_CLIPBOARD=1
     FEATURE_PINNED_CLIPBOARD=1
@@ -156,91 +113,9 @@ set_defaults() {
     WB_NETWORK=1
     WB_BATTERY=1
 
-    USE_EXTERNAL_MONITOR=1
-    INTERNAL_MONITOR_RULE='eDP-1,2880x1800@90,0x0,2'
-    EXTERNAL_MONITOR_RULE='DP-1,1920x1080@165,1440x0,1,transform,2'
-    INTERNAL_MONITOR_NAME='eDP-1'
-    EXTERNAL_MONITOR_NAME='DP-1'
-    INTERNAL_AUTO_RULE='preferred,0x0,2'
-    EXTERNAL_AUTO_RULE='1920x1080@144,1440x0,1,transform,0'
     TERMINAL_COMMAND='kitty'
     FILE_MANAGER_COMMAND='dolphin'
     MENU_COMMAND='hyprlauncher'
-    CUSTOMIZE_KEYS=0
-}
-
-select_options() {
-    printf '\n桌面配置组件（回车采用当前机器的默认值）\n'
-    prompt_bool COMP_HYPR '安装 Hyprland 配置' "$COMP_HYPR"
-    prompt_bool COMP_WAYBAR '安装 Waybar 配置' "$COMP_WAYBAR"
-    prompt_bool COMP_KITTY '安装 Kitty 配置' "$COMP_KITTY"
-    prompt_bool COMP_ALACRITTY '安装 Alacritty 配置' "$COMP_ALACRITTY"
-    prompt_bool COMP_ROFI '安装 Rofi 配置' "$COMP_ROFI"
-    prompt_bool COMP_MAKO '安装 Mako 配置' "$COMP_MAKO"
-    prompt_bool COMP_GTK '安装 GTK 3/4 样式' "$COMP_GTK"
-    prompt_bool COMP_WALLPAPERS '安装仓库内壁纸' "$COMP_WALLPAPERS"
-
-    if ((COMP_HYPR)); then
-        printf '\nHyprland 功能\n'
-        prompt_bool FEATURE_ANIMATIONS '启用动画' "$FEATURE_ANIMATIONS"
-        prompt_bool FEATURE_BLUR '启用模糊' "$FEATURE_BLUR"
-        prompt_bool FEATURE_SHADOWS '启用阴影' "$FEATURE_SHADOWS"
-        prompt_bool FEATURE_WALLPAPER '启用壁纸守护进程和主题壁纸' "$FEATURE_WALLPAPER"
-        prompt_bool FEATURE_MONITOR_AUTO '启用显示器热插拔自动布局' "$FEATURE_MONITOR_AUTO"
-        prompt_bool FEATURE_MONITOR_MENU '启用显示器设置菜单' "$FEATURE_MONITOR_MENU"
-        prompt_bool FEATURE_INPUT_METHOD '启动 Fcitx5 输入法' "$FEATURE_INPUT_METHOD"
-        prompt_bool FEATURE_CLIPBOARD '启用剪贴板历史' "$FEATURE_CLIPBOARD"
-        prompt_bool FEATURE_PINNED_CLIPBOARD '启用固定剪贴板' "$FEATURE_PINNED_CLIPBOARD"
-        prompt_bool FEATURE_SCREENSHOTS '启用截图与 Satty 标注' "$FEATURE_SCREENSHOTS"
-        prompt_bool FEATURE_AUDIO_KEYS '启用音量快捷键' "$FEATURE_AUDIO_KEYS"
-        prompt_bool FEATURE_BRIGHTNESS_KEYS '启用亮度快捷键' "$FEATURE_BRIGHTNESS_KEYS"
-        prompt_bool FEATURE_MEDIA_KEYS '启用媒体快捷键' "$FEATURE_MEDIA_KEYS"
-        prompt_bool FEATURE_KEYBIND_HELP '启用快捷键查看菜单' "$FEATURE_KEYBIND_HELP"
-        prompt_bool FEATURE_POLKIT '启动 Polkit 图形认证代理' "$FEATURE_POLKIT"
-        prompt_bool FEATURE_FLCLASH '启动 FlClash（AUR）' "$FEATURE_FLCLASH"
-        prompt_bool FEATURE_CC_SWITCH '启动 cc-switch（AUR）' "$FEATURE_CC_SWITCH"
-        prompt_bool FEATURE_WAYLYRICS '启动 Waylyrics（AUR）' "$FEATURE_WAYLYRICS"
-
-        prompt_text TERMINAL_COMMAND '默认终端命令' "$TERMINAL_COMMAND"
-        prompt_text FILE_MANAGER_COMMAND '默认文件管理器命令' "$FILE_MANAGER_COMMAND"
-        prompt_text MENU_COMMAND '默认命令菜单' "$MENU_COMMAND"
-
-        printf '\n显示器配置：填写完整 Hyprland monitor 值。\n'
-        prompt_text INTERNAL_MONITOR_RULE '内置屏规则' "$INTERNAL_MONITOR_RULE"
-        prompt_bool USE_EXTERNAL_MONITOR '写入外接屏规则' "$USE_EXTERNAL_MONITOR"
-        if ((USE_EXTERNAL_MONITOR)); then
-            prompt_text EXTERNAL_MONITOR_RULE '外接屏规则' "$EXTERNAL_MONITOR_RULE"
-        fi
-        if ((FEATURE_MONITOR_AUTO)); then
-            prompt_text INTERNAL_MONITOR_NAME '热插拔内置屏名称' "$INTERNAL_MONITOR_NAME"
-            prompt_text EXTERNAL_MONITOR_NAME '热插拔外接屏名称' "$EXTERNAL_MONITOR_NAME"
-            prompt_text INTERNAL_AUTO_RULE '热插拔内置屏布局' "$INTERNAL_AUTO_RULE"
-            prompt_text EXTERNAL_AUTO_RULE '热插拔外接屏布局' "$EXTERNAL_AUTO_RULE"
-        fi
-
-        if ((FORCE_CUSTOMIZE_KEYS)); then
-            CUSTOMIZE_KEYS=1
-        else
-            prompt_bool CUSTOMIZE_KEYS '逐项自定义所有已启用快捷键' "$CUSTOMIZE_KEYS"
-        fi
-    fi
-
-    if ((COMP_WAYBAR)); then
-        printf '\nWaybar 模块\n'
-        prompt_bool WB_LAUNCHER '显示启动器' "$WB_LAUNCHER"
-        prompt_bool WB_WORKSPACES '显示工作区' "$WB_WORKSPACES"
-        prompt_bool WB_CLOCK '显示时钟' "$WB_CLOCK"
-        prompt_bool WB_DISK '显示磁盘' "$WB_DISK"
-        prompt_bool WB_MEMORY '显示内存' "$WB_MEMORY"
-        prompt_bool WB_CPU '显示 CPU' "$WB_CPU"
-        prompt_bool WB_TEMPERATURE '显示温度' "$WB_TEMPERATURE"
-        prompt_bool WB_TRAY '显示托盘' "$WB_TRAY"
-        prompt_bool WB_BACKLIGHT '显示亮度' "$WB_BACKLIGHT"
-        prompt_bool WB_AUDIO '显示音量' "$WB_AUDIO"
-        prompt_bool WB_BLUETOOTH '显示蓝牙' "$WB_BLUETOOTH"
-        prompt_bool WB_NETWORK '显示网络' "$WB_NETWORK"
-        prompt_bool WB_BATTERY '显示电池' "$WB_BATTERY"
-    fi
 }
 
 feature_enabled() {
@@ -249,6 +124,7 @@ feature_enabled() {
         clipboard) ((FEATURE_CLIPBOARD)) ;;
         pinned_clipboard) ((FEATURE_PINNED_CLIPBOARD)) ;;
         monitor_menu) ((FEATURE_MONITOR_MENU)) ;;
+        audio_device_menu) ((FEATURE_AUDIO_DEVICE_MENU)) ;;
         screenshots) ((FEATURE_SCREENSHOTS)) ;;
         audio_keys) ((FEATURE_AUDIO_KEYS)) ;;
         brightness_keys) ((FEATURE_BRIGHTNESS_KEYS)) ;;
@@ -264,30 +140,6 @@ binding_combo() {
     key="$(trim "$2")"
     mods="${mods// /+}"
     if [[ -n "$mods" ]]; then printf '%s+%s' "$mods" "$key"; else printf '%s' "$key"; fi
-}
-
-collect_key_overrides() {
-    local line meta_id='' meta_feature='' meta_label=''
-    local rhs mods key dispatcher args default_combo answer
-
-    ((COMP_HYPR && CUSTOMIZE_KEYS)) || return 0
-    printf '\n逐项快捷键配置：回车保留默认值，输入 off 禁用。\n'
-
-    while IFS= read -r -u 3 line || [[ -n "$line" ]]; do
-        if [[ "$line" == '# bind-meta: '* ]]; then
-            IFS='|' read -r meta_id meta_feature meta_label <<< "${line#\# bind-meta: }"
-            continue
-        fi
-        [[ -n "$meta_id" && "$line" =~ ^bind[a-z]*[[:space:]]*= ]] || continue
-        if feature_enabled "$meta_feature"; then
-            rhs="${line#*=}"
-            IFS=',' read -r mods key dispatcher args <<< "$rhs"
-            default_combo="$(binding_combo "$mods" "$key")"
-            prompt_text answer "$meta_label" "$default_combo"
-            KEY_OVERRIDES["$meta_id"]="$answer"
-        fi
-        meta_id=''
-    done 3< "$SCRIPT_DIR/config/hypr/keybinds.conf"
 }
 
 collect_packages() {
@@ -307,6 +159,7 @@ collect_packages() {
     ((FEATURE_WALLPAPER && COMP_HYPR)) && add_package awww
     ((FEATURE_MONITOR_AUTO && COMP_HYPR)) && add_package socat
     ((FEATURE_MONITOR_MENU && COMP_HYPR)) && { add_package jq; add_package python; }
+    ((FEATURE_AUDIO_DEVICE_MENU && COMP_HYPR)) && add_package python
     ((FEATURE_INPUT_METHOD && COMP_HYPR)) && { add_package fcitx5; add_package fcitx5-gtk; add_package fcitx5-qt; }
     ((FEATURE_CLIPBOARD && COMP_HYPR)) && { add_package cliphist; add_package wl-clipboard; }
     ((FEATURE_PINNED_CLIPBOARD && COMP_HYPR)) && add_package wl-clipboard
@@ -315,7 +168,7 @@ collect_packages() {
     ((FEATURE_MEDIA_KEYS && COMP_HYPR)) && add_package playerctl
     ((FEATURE_POLKIT && COMP_HYPR)) && add_package polkit-kde-agent
     ((WB_BLUETOOTH && COMP_WAYBAR)) && add_package blueman
-    if ((COMP_HYPR && (FEATURE_CLIPBOARD || FEATURE_PINNED_CLIPBOARD || FEATURE_MONITOR_MENU || FEATURE_KEYBIND_HELP))); then
+    if ((COMP_HYPR && (FEATURE_CLIPBOARD || FEATURE_PINNED_CLIPBOARD || FEATURE_MONITOR_MENU || FEATURE_AUDIO_DEVICE_MENU || FEATURE_KEYBIND_HELP))); then
         add_package rofi
     fi
     ((COMP_WAYBAR && WB_LAUNCHER)) && add_package rofi
@@ -393,6 +246,25 @@ deploy_configs() {
     fi
 }
 
+deploy_lid_suspend_config() {
+    local source="$SCRIPT_DIR/config/systemd/logind.conf.d/90-lid-suspend.conf"
+    local target="/etc/systemd/logind.conf.d/90-lid-suspend.conf"
+
+    [[ -f "$source" ]] || return 0
+    if ((DRY_RUN)); then
+        printf '[dry-run] sudo install -Dm644 %s %s\n' "$source" "$target"
+        printf '[dry-run] sudo systemctl reload systemd-logind\n'
+        return 0
+    fi
+
+    command -v sudo >/dev/null 2>&1 || {
+        printf '未找到 sudo，无法部署合盖休眠配置：%s\n' "$target" >&2
+        return 1
+    }
+    sudo install -Dm644 "$source" "$target"
+    sudo systemctl reload systemd-logind >/dev/null 2>&1 || true
+}
+
 write_hypr_fragments() {
     local target="$CONFIG_HOME/hypr"
     ((COMP_HYPR)) || return 0
@@ -400,15 +272,12 @@ write_hypr_fragments() {
 
     {
         printf '# Generated by desktop-dotfiles/install.sh\n'
-        printf 'monitor = %s\n' "$INTERNAL_MONITOR_RULE"
-        ((USE_EXTERNAL_MONITOR)) && printf 'monitor = %s\n' "$EXTERNAL_MONITOR_RULE"
+        printf '# monitor-switch.sh applies the highest-resolution/highest-refresh layout at startup.\n'
+        printf 'monitor = ,preferred,auto,auto\n'
     } > "$target/monitors.conf"
 
     {
-        printf 'INTERNAL=%q\n' "$INTERNAL_MONITOR_NAME"
-        printf 'EXTERNAL=%q\n' "$EXTERNAL_MONITOR_NAME"
-        printf 'INTERNAL_RULE=%q\n' "$INTERNAL_AUTO_RULE"
-        printf 'EXTERNAL_RULE=%q\n' "$EXTERNAL_AUTO_RULE"
+        printf '# Monitor names and modes are detected dynamically by monitor-switch.sh.\n'
     } > "$target/monitor-settings.conf"
 
     {
@@ -485,7 +354,7 @@ render_keybinds() {
         if feature_enabled "$meta_feature"; then
             rhs="${line#*=}"
             IFS=',' read -r mods key dispatcher args <<< "$rhs"
-            combo="${KEY_OVERRIDES[$meta_id]:-$(binding_combo "$mods" "$key")}"
+            combo="$(binding_combo "$mods" "$key")"
             if [[ "${combo,,}" != off ]]; then
                 split_combo "$combo" mods key
                 combo="$(binding_combo "$mods" "$key")"
@@ -523,7 +392,8 @@ json_array() {
 
 render_waybar() {
     local config temporary
-    local -a left=() right=()
+    local index
+    local -a left=() right=() config_left=()
     ((COMP_WAYBAR)) || return 0
     ((DRY_RUN)) && { printf '[dry-run] 生成 Waybar 模块列表\n'; return 0; }
     command -v jq >/dev/null 2>&1 || {
@@ -547,8 +417,14 @@ render_waybar() {
 
     for config in "$CONFIG_HOME/waybar/config" "$CONFIG_HOME/waybar/config.niri"; do
         [[ -f "$config" ]] || continue
+        config_left=("${left[@]}")
+        if [[ "$config" == *.niri ]]; then
+            for index in "${!config_left[@]}"; do
+                [[ "${config_left[$index]}" == hyprland/workspaces ]] && config_left[$index]=niri/workspaces
+            done
+        fi
         temporary="$(mktemp "$config.tmp.XXXXXX")"
-        jq --argjson left "$(json_array "${left[@]}")" \
+        jq --argjson left "$(json_array "${config_left[@]}")" \
            --argjson right "$(json_array "${right[@]}")" \
            '."modules-left" = $left | ."modules-center" = [] | ."modules-right" = $right' \
            "$config" > "$temporary"
@@ -569,13 +445,12 @@ reload_desktop() {
 
 main() {
     set_defaults
-    select_options
-    collect_key_overrides
     collect_packages
 
     printf '\n开始安装。现有配置会备份到：%s\n' "$BACKUP_DIR"
     install_packages
     deploy_configs
+    ((COMP_HYPR)) && deploy_lid_suspend_config
     write_hypr_fragments
     render_keybinds
     render_waybar

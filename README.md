@@ -16,48 +16,29 @@ cd hyprland-dotfiles
 ./install.sh
 ```
 
-安装器默认进入交互模式，可以选择：
+安装器不提供组件、功能、Waybar 模块或快捷键选择。运行后会安装所需软件并完整部署仓库中的 Hyprland、Waybar、终端、启动器、通知、GTK 样式、辅助脚本和壁纸，使新机器采用同一套桌面配置。
 
-- 是否安装每个配置组件和对应软件
-- 动画、模糊、阴影、壁纸、显示器热插拔等 Hyprland 功能
-- Fcitx5、剪贴板、截图、Polkit、FlClash、cc-switch、Waylyrics 等启动功能
-- Waybar 的每一个可见模块
-- 当前机器的显示器规则、默认终端、文件管理器和命令菜单
-- 是否逐项修改所有已启用的 Hyprland 快捷键
+显示器名称、分辨率和刷新率不写死。Hyprland 启动和显示器热插拔时，脚本会为每个输出选择最高分辨率，并在该分辨率下选择最高刷新率，然后自动排列。显示器菜单支持临时仅启用外接显示器；安装器还会部署合盖休眠配置。
 
-逐项设置快捷键时，直接回车保留本仓库默认值；输入 `off` 可以禁用单独一项。快捷键格式例如 `SUPER+RETURN`、`SUPER+SHIFT+S`、`PRINT`。
-
-## 非交互安装
-
-完全采用仓库默认值：
-
-```bash
-./install.sh --defaults
-```
+## 安装选项
 
 仅部署配置，不调用 `pacman` 或 AUR helper：
 
 ```bash
-./install.sh --defaults --skip-packages
+./install.sh --skip-packages
 ```
 
 预览将执行的操作：
 
 ```bash
-./install.sh --defaults --dry-run
-```
-
-强制进入逐项快捷键设置：
-
-```bash
-./install.sh --customize-keybinds
+./install.sh --dry-run
 ```
 
 ## 默认软件
 
-官方仓库软件按所选功能动态安装，主要包括 `hyprland`、`waybar`、`kitty`、`alacritty`、`rofi`、`mako`、`awww`、`grim`、`slurp`、`satty`、`cliphist`、`wl-clipboard`、`fcitx5` 和相关 portal。
+官方仓库软件会随完整桌面配置一起安装，主要包括 `hyprland`、`waybar`、`kitty`、`alacritty`、`rofi`、`mako`、`awww`、`grim`、`slurp`、`satty`、`cliphist`、`wl-clipboard`、`fcitx5` 和相关 portal。
 
-选择 FlClash、cc-switch 或 Waylyrics 时，安装器会优先使用本机已有的 `paru`，其次使用 `yay`。没有 AUR helper 时只跳过这些可选包，不影响其余配置安装。
+FlClash、cc-switch 和 Waylyrics 会通过本机已有的 `paru` 或 `yay` 安装。没有 AUR helper 时会跳过这三个 AUR 包，不影响其余配置安装。
 
 ## 配置结构
 
@@ -65,10 +46,10 @@ cd hyprland-dotfiles
 config/                 可部署的桌面配置
   hypr/
     hyprland.conf       主配置与视觉参数
-    autostart.conf      安装器生成的启动项
+    autostart.conf      完整桌面启动项
     keybinds.conf       带默认值和元数据的全部快捷键
-    monitors.conf       安装器生成的显示器布局
-    preferences.conf    动画、模糊和阴影开关
+    monitors.conf       自适应显示器初始规则
+    preferences.conf    动画、模糊和阴影设置
   waybar/               状态栏配置与黑白主题
   kitty/                Kitty 配置与终端主题
   alacritty/            Alacritty 配置与终端主题
@@ -76,10 +57,10 @@ config/                 可部署的桌面配置
   mako/                  通知样式
   gtk-3.0/ gtk-4.0/     GTK 样式
 wallpapers/             当前桌面壁纸
-install.sh              交互式安装器
+install.sh              无交互完整安装器
 ```
 
-安装完成后再次运行 `./install.sh`，即可重新选择功能或生成快捷键。正在运行 Hyprland 时安装器会尝试重新加载配置；首次安装建议注销后从登录管理器进入 Hyprland。
+安装完成后再次运行 `./install.sh`，会备份现有配置并重新部署仓库的完整配置。正在运行 Hyprland 时安装器会尝试重新加载配置；首次安装建议注销后从登录管理器进入 Hyprland。
 
 ## 隐私处理
 
