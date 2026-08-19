@@ -20,6 +20,8 @@ cd hyprland-dotfiles
 
 显示器名称、分辨率和刷新率不写死。Hyprland 启动和显示器热插拔时，脚本会为每个输出选择最高分辨率，并在该分辨率下选择最高刷新率，然后自动排列。显示器菜单支持临时仅启用外接显示器；安装器还会部署合盖休眠配置。
 
+桌面服务会按显示器、主题、Waybar、通知和后台工具的依赖顺序启动。启动诊断日志保存在 `~/.local/state/desktop-dotfiles/session-start.log`。
+
 ## 安装选项
 
 仅部署配置，不调用 `pacman` 或 AUR helper：
